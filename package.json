@@ -1,0 +1,25 @@
+{
+  "name": "@onaclover/react-native-refreshable-list",
+  "version": "0.1.0",
+  "description": "A highly customizable list, strongly adapt to remote data displayings",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ethan605/react-native-refreshable-list.git"
+  },
+  "keywords": [
+    "react-native",
+    "list",
+    "customizable",
+    "remote-data"
+  ],
+  "author": "Ethan N.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ethan605/react-native-refreshable-list/issues"
+  },
+  "homepage": "https://github.com/ethan605/react-native-refreshable-list#readme"
+}
