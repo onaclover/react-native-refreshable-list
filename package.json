@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": "git+ssh://git@github.com/ethan605/react-native-refreshable-list.git",
+  "repository": "git+ssh://git@github.com/onaclover/react-native-refreshable-list.git",
   "keywords": [
     "react-native",
     "list",
@@ -16,9 +16,9 @@
   "author": "Ethan N.",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ethan605/react-native-refreshable-list/issues"
+    "url": "https://github.com/onaclover/react-native-refreshable-list/issues"
   },
-  "homepage": "https://github.com/ethan605/react-native-refreshable-list#readme",
+  "homepage": "https://github.com/onaclover/react-native-refreshable-list#readme",
   "devDependencies": {
     "babel-eslint": "^7.2.1",
     "eslint": "^3.18.0",
