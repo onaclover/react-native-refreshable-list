@@ -1,5 +1,5 @@
 {
-	"name": "RefreshableListExample",
+	"name": "@onaclover/react-native-refreshable-list-example",
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
@@ -7,8 +7,11 @@
 		"test": "jest"
 	},
 	"dependencies": {
+		"@onaclover/react-native-refreshable-list": "^0.1.0",
+		"lodash": "^4.17.4",
 		"react": "~15.4.1",
-		"react-native": "0.42.3"
+		"react-native": "0.42.3",
+		"react-native-button": "^1.8.2"
 	},
 	"devDependencies": {
 		"babel-jest": "19.0.0",
