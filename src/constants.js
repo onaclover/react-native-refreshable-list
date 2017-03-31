@@ -19,7 +19,7 @@ const MULTIPLE_SECTIONS_DATASOURCE = new ListView.DataSource({
   sectionHeaderHasChanged: ((s1, s2) => s1 !== s2),
 });
 
-export default {
+export {
   DEFAULT_SECTION_ID,
   EMPTY_DATA,
   PLACEHOLDER_DATA,
