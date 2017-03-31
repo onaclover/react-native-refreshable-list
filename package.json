@@ -6,10 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/ethan605/react-native-refreshable-list.git"
-  },
+  "repository": "git+ssh://git@github.com/ethan605/react-native-refreshable-list.git",
   "keywords": [
     "react-native",
     "list",
@@ -21,5 +18,19 @@
   "bugs": {
     "url": "https://github.com/ethan605/react-native-refreshable-list/issues"
   },
-  "homepage": "https://github.com/ethan605/react-native-refreshable-list#readme"
+  "homepage": "https://github.com/ethan605/react-native-refreshable-list#readme",
+  "devDependencies": {
+    "babel-eslint": "^7.2.1",
+    "eslint": "^3.18.0",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-react": "^6.10.3",
+    "eslint-plugin-react-native": "^2.3.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4",
+    "react": "^15.4.2",
+    "react-native": "^0.42.3",
+    "react-native-invertible-scroll-view": "^1.0.0",
+    "react-native-sglistview": "^0.3.10"
+  }
 }
