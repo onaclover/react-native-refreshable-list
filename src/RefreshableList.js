@@ -6,6 +6,7 @@ import React from 'react';
 import { ListView, RefreshControl, View } from 'react-native';
 import InvertibleScrollView from 'react-native-invertible-scroll-view';
 import SGListView from 'react-native-sglistview';
+import _ from 'lodash';
 
 import {
   PLACEHOLDER_DATA,
@@ -13,6 +14,18 @@ import {
   SINGLE_SECTION_DATASOURCE,
 } from './constants';
 import { hasSectionsDataBlob } from './utils';
+
+/**
+ * @README:
+ * Function to check whether a transformed dataBlob is empty or not
+ * First map all empty check of its values (`_.map` works for both Arrays & Plain objects)
+ * Then reduce results (array of booleans) using `&&` operator.
+ * This function can be written verbosely in pseudo-code as:
+ *  return isEmpty(valuesOf(dataBlob)[0]) && isEmpty(valuesOf(dataBlob)[1]) && ...
+ */
+export function isEmptyDataBlob(dataBlob) {
+  return _.reduce(_.map(dataBlob, _.isEmpty), (final, element) => (final && element));
+}
 
 export default class RefreshableList extends React.PureComponent {
   static propTypes = {
