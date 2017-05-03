@@ -158,13 +158,14 @@ export default class RefreshableList extends React.PureComponent {
     const { currentPage, isLoadingMore, isRefreshing, isReloading } = this.state;
     if (isLoadingMore || isRefreshing || isReloading) return;
 
-    const newState = { currentPage: currentPage + 1, isLoadingMore: true };
-    this.updateStates(newState, () => this.onLoadMore(currentPage + 1));
+    const page = currentPage + 1;
+    const newState = { currentPage: page, isLoadingMore: true };
+    this.updateStates(newState, () => this.onLoadMore({ page, reloading: false }));
   };
 
   refreshData = () => {
     const newState = { currentPage: 1, isRefreshing: true };
-    this.updateStates(newState, () => this.onRefresh({ reloading: false }));
+    this.updateStates(newState, () => this.onRefresh({ page: 1, reloading: false }));
   };
 
   reloadData = () => {
@@ -172,7 +173,7 @@ export default class RefreshableList extends React.PureComponent {
     if (isRefreshing || isReloading) return;
 
     const newState = { ...this.defaultStates, isReloading: true };
-    this.updateStates(newState, () => this.onRefresh({ reloading: true }));
+    this.updateStates(newState, () => this.onRefresh({ page: 1, reloading: true }));
   };
 
   // Private methods
