@@ -31,7 +31,6 @@ export default class RefreshableList extends React.PureComponent {
   static propTypes = {
     containerStyle: View.propTypes.style,
     dataBlob: React.PropTypes.any.isRequired,
-    hasMoreData: React.PropTypes.bool,
     inverted: React.PropTypes.bool,
     manualLoadMore: React.PropTypes.bool,
     manualReload: React.PropTypes.bool,
@@ -47,7 +46,6 @@ export default class RefreshableList extends React.PureComponent {
   static defaultProps = {
     // Passed props
     containerStyle: null,
-    hasMoreData: true,
     inverted: false,
     manualLoadMore: false,
     manualReload: false,
@@ -165,9 +163,6 @@ export default class RefreshableList extends React.PureComponent {
   });
 
   loadMoreData = () => {
-    const { hasMoreData } = this.props;
-    if (!hasMoreData) return;
-
     const { currentPage, isLoadingMore, isRefreshing, isReloading } = this.state;
     if (isLoadingMore || isRefreshing || isReloading) return;
 
@@ -223,10 +218,10 @@ export default class RefreshableList extends React.PureComponent {
   };
 
   renderFooter = () => {
-    const { hasMoreData, renderFooter } = this.props;
+    const { renderFooter } = this.props;
     const { isLoadingMore, isRefreshing, isReloading } = this.state;
 
-    const shouldRenderLoadMore = hasMoreData && !isLoadingMore && !isRefreshing && !isReloading;
+    const shouldRenderLoadMore = !isLoadingMore && !isRefreshing && !isReloading;
     const footLoadingRenderer = isLoadingMore ? this.renderFootLoading : () => null;
     const loadMoreRenderer = shouldRenderLoadMore ? this.renderLoadMore : footLoadingRenderer;
     return loadMoreRenderer != null ? loadMoreRenderer() : renderFooter.bind(this)();
