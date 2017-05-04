@@ -32,10 +32,11 @@ export default class RefreshableList extends React.PureComponent {
     containerStyle: View.propTypes.style,
     dataBlob: React.PropTypes.any.isRequired,
     inverted: React.PropTypes.bool,
+    loadMoreEnabled: React.PropTypes.bool,
     manualLoadMore: React.PropTypes.bool,
     manualReload: React.PropTypes.bool,
-    onLoadMore: React.PropTypes.func,
-    onRefresh: React.PropTypes.func,
+    onFetchData: React.PropTypes.func.isRequired,
+    refreshEnabled: React.PropTypes.bool,
     renderFootLoading: React.PropTypes.func,
     renderLoadMore: React.PropTypes.func,
     renderPlaceholder: React.PropTypes.func,
@@ -47,10 +48,10 @@ export default class RefreshableList extends React.PureComponent {
     // Passed props
     containerStyle: null,
     inverted: false,
+    loadMoreEnabled: true,
     manualLoadMore: false,
     manualReload: false,
-    onLoadMore: null,
-    onRefresh: null,
+    refreshEnabled: true,
     renderFootLoading: null,
     renderLoadMore: null,
     renderPlaceholder: null,
@@ -60,7 +61,7 @@ export default class RefreshableList extends React.PureComponent {
     enableEmptySections: true,
     initialListSize: 20,
     onEndReachedThreshold: 1,
-    pageSize: 1,
+    pageSize: 20,
     removeClippedSubviews: false,
     scrollRenderAheadDistance: 1,
     stickyHeaderIndices: [],
@@ -71,22 +72,14 @@ export default class RefreshableList extends React.PureComponent {
 
     this.hasSections = false;
     this.mounted = false;
-
-    const {
-      onLoadMore,
-      onRefresh,
-      renderFootLoading,
-      renderLoadMore,
-      renderPlaceholder,
-      renderRow,
-    } = this.props;
     
     // Required props
-    this.onRefresh = onRefresh.bind(this);
-    this.renderRow = renderRow.bind(this);
+    this.onFetchData = this.props.onFetchData.bind(this);
+    this.renderRow = this.props.renderRow.bind(this);
 
     // Optional props
-    this.onLoadMore = onLoadMore == null ? () => {} : onLoadMore.bind(this);
+    const { renderFootLoading, renderLoadMore, renderPlaceholder } = this.props;
+
     this.renderFootLoading = renderFootLoading == null ? () => null : renderFootLoading.bind(this);
     this.renderLoadMore = renderLoadMore == null ? () => null : renderLoadMore.bind(this);
     this.renderPlaceholder = renderPlaceholder == null ? () => null : renderPlaceholder.bind(this);
@@ -144,7 +137,7 @@ export default class RefreshableList extends React.PureComponent {
   }
 
   get refreshControl() {
-    if (this.props.onRefresh == null) return null;
+    if (!this.props.refreshEnabled) return null;
 
     return (
       <RefreshControl
@@ -168,12 +161,12 @@ export default class RefreshableList extends React.PureComponent {
 
     const page = currentPage + 1;
     const newState = { currentPage: page, isLoadingMore: true };
-    this.updateStates(newState, () => this.onLoadMore({ page, reloading: false }));
+    this.updateStates(newState, () => this.onFetchData({ page, reloading: false }));
   };
 
   refreshData = () => {
     const newState = { currentPage: 1, isRefreshing: true };
-    this.updateStates(newState, () => this.onRefresh({ page: 1, reloading: false }));
+    this.updateStates(newState, () => this.onFetchData({ page: 1, reloading: false }));
   };
 
   reloadData = () => {
@@ -181,7 +174,7 @@ export default class RefreshableList extends React.PureComponent {
     if (isRefreshing || isReloading) return;
 
     const newState = { ...this.defaultStates, isReloading: true };
-    this.updateStates(newState, () => this.onRefresh({ page: 1, reloading: true }));
+    this.updateStates(newState, () => this.onFetchData({ page: 1, reloading: true }));
   };
 
   // Private methods
@@ -213,8 +206,8 @@ export default class RefreshableList extends React.PureComponent {
   }
 
   onEndReached = () => {
-    const { manualLoadMore, onLoadMore } = this.props;
-    !manualLoadMore && onLoadMore != null && this.loadMoreData();
+    const { manualLoadMore, loadMoreEnabled } = this.props;
+    !manualLoadMore && loadMoreEnabled && this.loadMoreData();
   };
 
   renderFooter = () => {

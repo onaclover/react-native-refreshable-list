@@ -15,29 +15,27 @@ export default class RefreshableListExample extends React.PureComponent {
     records: [],
   };
 
-  loadMoreRecords = page => {
-    const { records } = this.state;
-    const nextRecords = _.range(20).map(num => `Row data #${num + 1 + (page - 1) * 20}`);
-    const newState = { records: [...records, ...nextRecords] };
-    setTimeout(() => this.setState(newState), 1000);
-  };
-
   prependRecord = () => {
     const { records } = this.state;
     const newState = { records: [`New record ${Date.now()}`, ...records] };
     setTimeout(() => this.setState(newState), 1000);
   };
 
-  refreshRecords = () => {
-    const newState = { records: _.range(20).map(num => `Row data #${num + 1}`) };
+  fetchRecords = ({ page = 1 }) => {
+    if (page === 1) {
+      const newState = { records: _.range(20).map(num => `Row data #${num + 1}`) };
+      setTimeout(() => this.setState(newState), 1000);
+      return;
+    }
+
+    const { records } = this.state;
+    const nextRecords = _.range(20).map(num => `Row data #${num + 1 + (page - 1) * 20}`);
+    const newState = { records: [...records, ...nextRecords] };
     setTimeout(() => this.setState(newState), 1000);
   };
 
   renderLoadMore = () => (
-    <Text
-      style={styles.recordControl}
-      onPress={() => this.recordsList.loadMoreData()}
-    >
+    <Text style={styles.recordControl} onPress={() => this.recordsList.loadMoreData()}>
       Load more...
     </Text>
   );
@@ -65,10 +63,9 @@ export default class RefreshableListExample extends React.PureComponent {
           containerStyle={styles.recordsListContainer}
           dataBlob={this.state.records}
           inverted={false}
-          manualLoadMore
+          manualLoadMore={false}
           manualReload={false}
-          onLoadMore={page => this.loadMoreRecords(page)}
-          onRefresh={this.refreshRecords}
+          onFetchData={this.fetchRecords}
           ref={ref => this.recordsList = ref}
           refreshControlProps={{ tintColor: 'white' }}
           renderFootLoading={this.renderFootLoading}
