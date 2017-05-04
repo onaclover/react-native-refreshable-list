@@ -1,42 +1,32 @@
 /**
- * @providesModule RefreshableList.Main
+ * @providesModule RefreshableList.Index
  */
 
 import React from 'react';
 import { ListView, RefreshControl, View } from 'react-native';
 import InvertibleScrollView from 'react-native-invertible-scroll-view';
 import SGListView from 'react-native-sglistview';
-import _ from 'lodash';
+import { Logger } from '@onaclover/react-native-utils';
 
 import {
+  EMPTY_DATA,
   PLACEHOLDER_DATA,
   MULTIPLE_SECTIONS_DATASOURCE,
   SINGLE_SECTION_DATASOURCE,
 } from './constants';
-import { hasSectionsDataBlob } from './utils';
-
-/**
- * @README:
- * Function to check whether a transformed dataBlob is empty or not
- * First map all empty check of its values (`_.map` works for both Arrays & Plain objects)
- * Then reduce results (array of booleans) using `&&` operator.
- * This function can be written verbosely in pseudo-code as:
- *  return isEmpty(valuesOf(dataBlob)[0]) && isEmpty(valuesOf(dataBlob)[1]) && ...
- */
-export function isEmptyDataBlob(dataBlob) {
-  return _.reduce(_.map(dataBlob, _.isEmpty), (final, element) => (final && element));
-}
+import { isEmptyDataBlob, hasSectionsDataBlob } from './utils';
 
 export default class RefreshableList extends React.PureComponent {
   static propTypes = {
     containerStyle: View.propTypes.style,
     dataBlob: React.PropTypes.any.isRequired,
+    hasMoreData: React.PropTypes.bool,
     inverted: React.PropTypes.bool,
     loadMoreEnabled: React.PropTypes.bool,
-    manualLoadMore: React.PropTypes.bool,
     manualReload: React.PropTypes.bool,
-    onFetchData: React.PropTypes.func.isRequired,
+    onFetchData: React.PropTypes.func,
     refreshEnabled: React.PropTypes.bool,
+    renderEmptyData: React.PropTypes.func,
     renderFootLoading: React.PropTypes.func,
     renderLoadMore: React.PropTypes.func,
     renderPlaceholder: React.PropTypes.func,
@@ -47,11 +37,12 @@ export default class RefreshableList extends React.PureComponent {
   static defaultProps = {
     // Passed props
     containerStyle: null,
+    hasMoreData: true,
     inverted: false,
     loadMoreEnabled: true,
-    manualLoadMore: false,
     manualReload: false,
     refreshEnabled: true,
+    renderEmptyData: null,
     renderFootLoading: null,
     renderLoadMore: null,
     renderPlaceholder: null,
@@ -72,14 +63,18 @@ export default class RefreshableList extends React.PureComponent {
 
     this.hasSections = false;
     this.mounted = false;
-    
-    // Required props
-    this.onFetchData = this.props.onFetchData.bind(this);
-    this.renderRow = this.props.renderRow.bind(this);
 
     // Optional props
-    const { renderFootLoading, renderLoadMore, renderPlaceholder } = this.props;
+    const {
+      onFetchData,
+      renderEmptyData,
+      renderFootLoading,
+      renderLoadMore,
+      renderPlaceholder,
+    } = this.props;
 
+    this.onFetchData = onFetchData == null ? () => {} : onFetchData.bind(this);
+    this.renderEmptyData = renderEmptyData == null ? () => null : renderEmptyData.bind(this);
     this.renderFootLoading = renderFootLoading == null ? () => null : renderFootLoading.bind(this);
     this.renderLoadMore = renderLoadMore == null ? () => null : renderLoadMore.bind(this);
     this.renderPlaceholder = renderPlaceholder == null ? () => null : renderPlaceholder.bind(this);
@@ -117,6 +112,15 @@ export default class RefreshableList extends React.PureComponent {
       : SINGLE_SECTION_DATASOURCE.cloneWithRows(dataBlob);
   }
 
+  get emptyDataSource() {
+    if (!this.hasSections)
+      return SINGLE_SECTION_DATASOURCE.cloneWithRows([{ empty: true }]);
+
+    return MULTIPLE_SECTIONS_DATASOURCE.cloneWithRowsAndSections({
+      [EMPTY_DATA]: { [EMPTY_DATA]: { empty: true } },
+    });
+  }
+
   get placeholderDataSource() {
     if (!this.hasSections)
       return SINGLE_SECTION_DATASOURCE.cloneWithRows([{ placeholder: true }]);
@@ -130,9 +134,10 @@ export default class RefreshableList extends React.PureComponent {
     return {
       currentPage: 1,
       dataSource: this.clonedDataSource,
-      isLoadingMore: false,             // Current fetch is to load next page of data
-      isRefreshing: false,              // Current fetch is to refresh all data
-      isReloading: false,               // Reset all states
+      isEmpty: false,
+      isLoadingMore: false,
+      isRefreshing: false,
+      isReloading: false,
     };
   }
 
@@ -150,12 +155,15 @@ export default class RefreshableList extends React.PureComponent {
 
   // Public methods
   cancelLoading = () => this.updateStates({
+    isEmpty: false,
     isLoadingMore: false,
     isRefreshing: false,
     isReloading: false,
   });
 
   loadMoreData = () => {
+    if (!this.props.hasMoreData) return;
+
     const { currentPage, isLoadingMore, isRefreshing, isReloading } = this.state;
     if (isLoadingMore || isRefreshing || isReloading) return;
 
@@ -191,6 +199,7 @@ export default class RefreshableList extends React.PureComponent {
 
     const newState = {
       dataSource: this.clonedDataSource,
+      isEmpty: isEmptyDataBlob(this.clonedDataSource._dataBlob),
       isLoadingMore: false,
       isRefreshing: false,
       isReloading: false,
@@ -202,44 +211,63 @@ export default class RefreshableList extends React.PureComponent {
   // State helpers
   updateStates = (newState, callback) => {
     if (!this.mounted) return;
-    this.setState(newState, callback);
+    this.setState(newState, () => {
+      callback && callback();
+      Logger.debug(this.state);
+    });
   }
 
+  // Listview props
+  buildDataSource = () => {
+    const { isEmpty, isReloading } = this.state;
+
+    const emptyDataSource = isEmpty ? this.emptyDataSource : this.state.dataSource;
+    return isReloading ? this.placeholderDataSource : emptyDataSource;
+  };
+
   onEndReached = () => {
-    const { manualLoadMore, loadMoreEnabled } = this.props;
-    !manualLoadMore && loadMoreEnabled && this.loadMoreData();
+    const { loadMoreEnabled, renderLoadMore } = this.props;
+    renderLoadMore == null && loadMoreEnabled && this.loadMoreData();
   };
 
   renderFooter = () => {
-    const { renderFooter } = this.props;
+    const { renderFooter, renderLoadMore } = this.props;
     const { isLoadingMore, isRefreshing, isReloading } = this.state;
 
-    const shouldRenderLoadMore = !isLoadingMore && !isRefreshing && !isReloading;
-    const footLoadingRenderer = isLoadingMore ? this.renderFootLoading : () => null;
-    const loadMoreRenderer = shouldRenderLoadMore ? this.renderLoadMore : footLoadingRenderer;
-    return loadMoreRenderer != null ? loadMoreRenderer() : renderFooter.bind(this)();
+    const defaultRenderer = renderFooter == null ? () => null : renderFooter.bind(this);
+
+    if (isRefreshing || isReloading) return defaultRenderer();
+    if (renderLoadMore != null) return this.renderLoadMore();
+    if (isLoadingMore) return this.renderFootLoading();
+
+    return defaultRenderer();
   };
 
   renderScrollComponent = props => <InvertibleScrollView {...props} />;
 
+  renderRow = (...args) => {
+    const { renderRow } = this.props;
+    const { isEmpty, isReloading } = this.state;
+
+    const emptyDataRenderer = isEmpty ? this.renderEmptyData : renderRow.bind(this);
+    const rowRenderer = isReloading ? this.renderPlaceholder : emptyDataRenderer;
+
+    return rowRenderer(...args);
+  }
+
   render() {
     const { containerStyle, usesSGList } = this.props;
-    const { isReloading } = this.state;
-
-    const dataSource = isReloading ? this.placeholderDataSource : this.state.dataSource;
-    const renderRow = isReloading ? this.renderPlaceholder : this.renderRow;
-
     const ListViewComponent = usesSGList ? SGListView : ListView;
 
     const listContent = (
       <ListViewComponent
         {...this.props}
-        dataSource={dataSource}
+        dataSource={this.buildDataSource()}
         onEndReached={this.onEndReached}
         ref={ref => this.listView = ref}
         refreshControl={this.refreshControl}
         renderFooter={this.renderFooter}
-        renderRow={renderRow}
+        renderRow={this.renderRow}
         renderScrollComponent={this.renderScrollComponent}
       />
     );
