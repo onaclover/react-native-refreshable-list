@@ -12,14 +12,13 @@ import RefreshableList from '@onaclover/react-native-refreshable-list';
 
 export default class RefreshableListExample extends React.PureComponent {
   state = {
-    hasMoreData: true,
     records: [],
   };
 
   loadMoreRecords = page => {
     const { records } = this.state;
     const nextRecords = _.range(20).map(num => `Row data #${num + 1 + (page - 1) * 20}`);
-    const newState = { hasMoreData: page < 5, records: [...records, ...nextRecords] };
+    const newState = { records: [...records, ...nextRecords] };
     setTimeout(() => this.setState(newState), 1000);
   };
 
@@ -30,10 +29,7 @@ export default class RefreshableListExample extends React.PureComponent {
   };
 
   refreshRecords = () => {
-    const newState = {
-      hasMoreData: true,
-      records: _.range(20).map(num => `Row data #${num + 1}`),
-    };
+    const newState = { records: _.range(20).map(num => `Row data #${num + 1}`) };
     setTimeout(() => this.setState(newState), 1000);
   };
 
@@ -68,7 +64,6 @@ export default class RefreshableListExample extends React.PureComponent {
         <RefreshableList
           containerStyle={styles.recordsListContainer}
           dataBlob={this.state.records}
-          hasMoreData={this.state.hasMoreData}
           inverted={false}
           manualLoadMore
           manualReload={false}
