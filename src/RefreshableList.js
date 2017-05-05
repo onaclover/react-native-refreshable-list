@@ -6,7 +6,6 @@ import React from 'react';
 import { ListView, RefreshControl, View } from 'react-native';
 import InvertibleScrollView from 'react-native-invertible-scroll-view';
 import SGListView from 'react-native-sglistview';
-import { Logger } from '@onaclover/react-native-utils';
 
 import {
   EMPTY_DATA,
@@ -154,7 +153,7 @@ export default class RefreshableList extends React.PureComponent {
   }
 
   // Public methods
-  cancelLoading = () => this.updateStates({
+  cancelLoading = () => this.setState({
     isEmpty: false,
     isLoadingMore: false,
     isRefreshing: false,
@@ -169,12 +168,12 @@ export default class RefreshableList extends React.PureComponent {
 
     const page = currentPage + 1;
     const newState = { currentPage: page, isLoadingMore: true };
-    this.updateStates(newState, () => this.onFetchData({ page, reloading: false }));
+    this.setState(newState, () => this.onFetchData({ page, reloading: false }));
   };
 
   refreshData = () => {
     const newState = { currentPage: 1, isRefreshing: true };
-    this.updateStates(newState, () => this.onFetchData({ page: 1, reloading: false }));
+    this.setState(newState, () => this.onFetchData({ page: 1, reloading: false }));
   };
 
   reloadData = () => {
@@ -182,7 +181,7 @@ export default class RefreshableList extends React.PureComponent {
     if (isRefreshing || isReloading) return;
 
     const newState = { ...this.defaultStates, isReloading: true };
-    this.updateStates(newState, () => this.onFetchData({ page: 1, reloading: true }));
+    this.setState(newState, () => this.onFetchData({ page: 1, reloading: true }));
   };
 
   // Private methods
@@ -194,6 +193,7 @@ export default class RefreshableList extends React.PureComponent {
     isRefreshing && nativeListView.scrollTo({ animated: false, y: 0 });
   };
 
+  /* eslint-disable no-underscore-dangle */
   populateData = () => {
     const { isRefreshing } = this.state;
 
@@ -205,17 +205,9 @@ export default class RefreshableList extends React.PureComponent {
       isReloading: false,
     };
 
-    this.updateStates(newState, () => this.resetScrollOffset(isRefreshing));
+    this.setState(newState, () => this.resetScrollOffset(isRefreshing));
   };
-
-  // State helpers
-  updateStates = (newState, callback) => {
-    if (!this.mounted) return;
-    this.setState(newState, () => {
-      callback && callback();
-      Logger.debug(this.state);
-    });
-  }
+  /* eslint-enable no-underscore-dangle */
 
   // Listview props
   buildDataSource = () => {
