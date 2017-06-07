@@ -1,6 +1,6 @@
 {
   "name": "@onaclover/react-native-refreshable-list",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "A highly customizable list, strongly adapt to remote data displayings",
   "main": "index.js",
   "scripts": {
