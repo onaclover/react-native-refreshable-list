@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { ListView, RefreshControl, View } from 'react-native';
+import { ListView, RefreshControl, View, ViewPropTypes } from 'react-native';
 import InvertibleScrollView from 'react-native-invertible-scroll-view';
 import SGListView from 'react-native-sglistview';
 
@@ -17,7 +17,7 @@ import { isEmptyDataBlob, hasSectionsDataBlob } from './utils';
 
 export default class RefreshableList extends React.PureComponent {
   static propTypes = {
-    containerStyle: View.propTypes.style,
+    containerStyle: ViewPropTypes.style,
     dataBlob: React.PropTypes.any.isRequired,
     hasMoreData: React.PropTypes.bool,
     inverted: React.PropTypes.bool,
